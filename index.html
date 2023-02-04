@@ -1,1 +1,34 @@
-Hello World
+<script>
+   function expand(id) {
+      if (id.startsWith("journal/")) {
+         const entry = id.replace(/^journal\//, '')
+         return `http://127.0.0.1:1111/${entry}`
+      }
+      return id
+   }
+
+   (function (window, document, undefined) {
+      window.onload = init;
+
+      function init() {
+         const params = (new URL(document.location)).searchParams;
+         const id = params.get("id");
+         const url = expand(id)
+         const span = document.getElementById("url")
+         span.innerHTML = `<a href="${url}">${url}</a>`
+      }
+
+   })(window, document, undefined);
+</script>
+
+<html lang="en">
+
+<head>
+   <title>Redirect</title>
+</head>
+
+<body>
+   Redirecting to <span id="url">...</span>
+</body>
+
+</html>
