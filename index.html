@@ -16,6 +16,7 @@
          const url = expand(id)
          const span = document.getElementById("url")
          span.innerHTML = `<a href="${url}">${url}</a>`
+         window.location.replace(url)
       }
 
    })(window, document, undefined);
