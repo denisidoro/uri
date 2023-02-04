@@ -1,8 +1,13 @@
 <script>
    function expand(id) {
-      if (id.startsWith("journal/")) {
-         const entry = id.replace(/^journal\//, '')
-         return `http://127.0.0.1:1111/${entry}`
+      const i = id.indexOf('/');
+      const [ns, entry] = [id.slice(0, i), id.slice(i + 1)];
+      if (entry != null) {
+         switch (ns) {
+            case 'j':
+            case 'journal':
+               return `http://127.0.0.1:1111/${entry}`
+         }
       }
       return id
    }
@@ -26,6 +31,18 @@
 
 <head>
    <title>Redirect</title>
+
+   <style>
+      body,
+      html {
+         background: black;
+         color: white;
+      }
+
+      a {
+         color: lightblue;
+      }
+   </style>
 </head>
 
 <body>
