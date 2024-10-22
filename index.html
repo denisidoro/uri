@@ -1,36 +1,94 @@
-<script>
-   function expand(id) {
-      const i = id.indexOf('/');
-      const [ns, entry] = [id.slice(0, i), id.slice(i + 1)];
-      if (entry != null) {
-         switch (ns) {
-            case 'j':
-            case 'journal':
-               return `http://127.0.0.1:1111/${entry}`
-         }
-      }
-      return id
-   }
-
-   (function (window, document, undefined) {
-      window.onload = init;
-
-      function init() {
-         const params = (new URL(document.location)).searchParams;
-         const id = params.get("id");
-         const url = expand(id)
-         const span = document.getElementById("url")
-         span.innerHTML = `<a href="${url}">${url}</a>`
-         window.location.replace(url)
-      }
-
-   })(window, document, undefined);
-</script>
-
-<html lang="en">
+<html lang='en'>
 
 <head>
    <title>Redirect</title>
+
+   <script>
+      const idEngineTA = 'engineTA'
+      const idQueryTA = 'queryTA'
+      const idUrlSpan = 'urlSpan'
+      const idForm = 'form'
+
+      const ngChatgpt = 'chatgpt'
+      const ngFallback = 'fallback'
+
+      function makeVisible(id, isVisible = true) {
+         const div = document.getElementById(id)
+         div.style.display = isVisible ? 'block' : 'none'
+      }
+
+      function getPrefix(name, redir) {
+         switch (name) {
+            case ngChatgpt:
+               return 'https://chat.openai.com/?q='
+         }
+         return redir
+      }
+
+      function getEngineAndQuery(query) {
+         const i = query.indexOf('/')
+         const [ns, rawEntry] = i == -1 ? [query, null] : [query.slice(0, i), query.slice(i + 1)]
+         const entry = rawEntry == null ? '' : rawEntry
+         switch (ns) {
+            case 'english':
+               return [ngChatgpt, `Fix English errors, if any\n\n---\n\n${entry}`]
+         }
+         return [ngFallback, query]
+      }
+
+      function onSubmit(redir) {
+         const engineTA = document.getElementById(idEngineTA)
+         const queryTA = document.getElementById(idQueryTA)
+         const urlSpan = document.getElementById(idUrlSpan)
+
+         const prefix = getPrefix(engineTA.value, redir)
+         const suffix = encodeURI(queryTA.value)
+         const url = `${prefix}${suffix}`
+         urlSpan.innerHTML = url
+         makeVisible('redir')
+         makeVisible('form', false)
+
+         window.location.replace(url)
+      }
+
+      (function (window, document, undefined) {
+         window.onload = init;
+
+         function init() {
+            const params = (new URL(document.location)).searchParams
+            const q = params.get('query')
+            const redir = params.get('redir') || 'https://www.google.com/search?q='
+
+            const [engine, query] = getEngineAndQuery(q)
+
+            const engineTA = document.getElementById(idEngineTA)
+            engineTA.value = engine
+
+            const queryTA = document.getElementById(idQueryTA)
+            queryTA.value = query
+
+            makeVisible(idForm)
+
+            // focus at the last character
+            queryTA.focus()
+            const length = queryTA.value.length
+            queryTA.setSelectionRange(length, length)
+
+            queryTA.addEventListener('keydown', (event) => {
+               if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+                  event.preventDefault()
+                  onSubmit(redir)
+               }
+            })
+
+            const form = document.getElementById(idForm)
+            form.addEventListener('submit', (event) => {
+               event.preventDefault()
+               onSubmit(redir)
+            })
+         }
+      })(window, document, undefined);
+   </script>
 
    <style>
       body,
@@ -46,7 +104,17 @@
 </head>
 
 <body>
-   Redirecting to <span id="url">...</span>
+
+   <form id='form' style='display: none;'>
+      <textarea id='engineTA' rows='1' cols='50' placeholder='Engine'></textarea><br><br>
+      <textarea id='queryTA' rows='10' cols='50' placeholder='Query'></textarea><br><br>
+      <button type='submit'>Submit</button>
+   </form>
+
+   <div id='redir' style='display: none;'>
+      Redirecting to <span id='urlSpan'>...</span>
+   </div>
+
 </body>
 
 </html>
