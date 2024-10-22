@@ -56,7 +56,7 @@
 
          function init() {
             const params = (new URL(document.location)).searchParams
-            const q = params.get('query')
+            const q = params.get('q')
             const redir = params.get('redir') || 'https://www.google.com/search?q='
 
             const [engine, query] = getEngineAndQuery(q)
